@@ -6,10 +6,8 @@
     justify-content: center;
     padding-inline: var(--edge-side, var(--side));
     pointer-events: none;
-    font: var(--text-size, var(--font_size))/var(--line, var(--leading)) system-ui, sans-serif;
+    font: var(--text-size, var(--font_size))/var(--line, var(--leading)) var(--banner-font, system-ui), system-ui, sans-serif;
 }
-
-#cookie-banner.font-nunito { font-family: Nunito, Helvetica, Arial, sans-serif; }
 
 #cookie-banner.at-bottom {
     bottom: max(var(--edge, var(--offset)), env(safe-area-inset-bottom));

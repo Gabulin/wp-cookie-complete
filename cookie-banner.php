@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Cookie Banner
  * Description: Настраиваемая плашка cookies с выбором категорий.
- * Version: 1.0.8
+ * Version: 1.0.9
  * Author: Gabulin
  * Author URI: https://github.com/Gabulin
  * Requires PHP: 7.4
@@ -44,18 +44,18 @@ function cookie_banner_sizes() {
 
 function cookie_banner_colors() {
 	return [
-		'background' => ['Фон плашки', '#2c2a29'],
-		'foreground' => ['Текст плашки', '#ece4d7'],
-		'link_color' => ['Цвет ссылок', '#ece4d7'],
-		'button_bg' => ['Фон кнопок', '#bb9767'],
-		'button_fg' => ['Текст кнопок', '#1f1b16'],
-		'hover_bg' => ['Фон кнопок при наведении', '#a9865a'],
+		'background' => ['Фон плашки', '#ffffff'],
+		'foreground' => ['Текст плашки', '#1f2937'],
+		'link_color' => ['Цвет ссылок', '#1d4ed8'],
+		'button_bg' => ['Фон кнопок', '#2563eb'],
+		'button_fg' => ['Текст кнопок', '#ffffff'],
+		'hover_bg' => ['Фон кнопок при наведении', '#1d4ed8'],
 		'hover_fg' => ['Текст кнопок при наведении', '#ffffff'],
-		'save_border' => ['Рамка кнопки «Сохранить выбор»', '#827c74'],
-		'switch_off' => ['Выключенный переключатель', '#625e58'],
-		'switch_on' => ['Включённый переключатель', '#bb9767'],
+		'save_border' => ['Рамка кнопки «Сохранить выбор»', '#6b7280'],
+		'switch_off' => ['Выключенный переключатель', '#6b7280'],
+		'switch_on' => ['Включённый переключатель', '#2563eb'],
 		'switch_dot' => ['Кружок переключателя', '#ffffff'],
-		'shadow_color' => ['Цвет тени', '#2c2a29'],
+		'shadow_color' => ['Цвет тени', '#000000'],
 	];
 }
 
@@ -76,7 +76,7 @@ function cookie_banner_defaults() {
 			['action' => 'accept', 'label' => 'Принять все'],
 		],
 		'position' => 'bottom',
-		'font' => 'nunito',
+		'font' => '',
 		'layout' => 'row',
 		'phone_buttons' => 'grid',
 		'shadow_y' => 18,
@@ -99,7 +99,8 @@ function cookie_banner_options() {
 	$defaults = cookie_banner_defaults();
 	$saved = get_option('cookie_banner_settings', []);
 	$options = wp_parse_args($saved, $defaults);
-	$options['link_color'] = $saved['link_color'] ?? $options['foreground'];
+	$options['link_color'] = $saved['link_color'] ?? $saved['foreground'] ?? $defaults['link_color'];
+	$options['font'] = cookie_banner_font_name($options['font']);
 
 	// Переводим только старые стандартные подписи.
 	$old = [
@@ -170,6 +171,15 @@ function cookie_banner_allows($category) {
 	return ($choices[$category] ?? false) === true;
 }
 
+function cookie_banner_font_name($name) {
+	$name = is_string($name) ? trim($name) : '';
+	if ($name === 'system' || !preg_match('/^[\p{L}\p{M}\p{N} ._\x27-]{1,100}$/uD', $name)) {
+		return '';
+	}
+
+	return $name;
+}
+
 function cookie_banner_message_html($message) {
 	return wp_kses($message, [
 		'a' => ['href' => true, 'title' => true, 'target' => true, 'rel' => true],
@@ -211,7 +221,7 @@ function cookie_banner_sanitize($input) {
 		$out[$field] = is_numeric($value) ? min($max, max(0, (int) $value)) : $defaults[$field];
 	}
 	$out['position'] = ($input['position'] ?? '') === 'top' ? 'top' : 'bottom';
-	$out['font'] = ($input['font'] ?? '') === 'system' ? 'system' : 'nunito';
+	$out['font'] = cookie_banner_font_name($input['font'] ?? '');
 	$out['layout'] = ($input['layout'] ?? '') === 'stack' ? 'stack' : 'row';
 	$out['phone_buttons'] = ($input['phone_buttons'] ?? '') === 'stack' ? 'stack' : 'grid';
 	// Код essential занят обязательной категорией.
@@ -371,8 +381,14 @@ function cookie_banner_admin() {
 			</table>
 			<h2>Оформление плашки</h2>
 			<table class="form-table" role="presentation">
+				<tr>
+					<th scope="row"><label for="cookie-font">Шрифт</label></th>
+					<td>
+						<input type="text" class="regular-text" id="cookie-font" name="cookie_banner_settings[font]" value="<?php echo esc_attr($options['font']); ?>" placeholder="Системный шрифт" maxlength="100" aria-describedby="cookie-font-note">
+						<p class="description" id="cookie-font-note">Укажите название шрифта, например Arial. Для шрифтов с сайта используйте название, уже подключённое в теме. Пустое поле оставит системный шрифт.</p>
+					</td>
+				</tr>
 				<?php foreach ([
-					'font' => ['Шрифт', ['nunito' => 'Nunito, если подключён темой', 'system' => 'Системный']],
 					'layout' => ['Текст и кнопки на компьютере', ['row' => 'В один ряд', 'stack' => 'Друг под другом']],
 					'phone_buttons' => ['Кнопки на телефоне', ['grid' => 'Две колонки, «Принять все» на всю ширину', 'stack' => 'Одна колонка']],
 				] as $field => [$label, $choices]) : ?>
@@ -493,7 +509,7 @@ add_action('wp_enqueue_scripts', function () {
 	if (!cookie_banner_visible(cookie_banner_options()['mode'])) {
 		return;
 	}
-	wp_enqueue_style('cookie-banner', plugins_url('banner.css', __FILE__), [], '1.0.8');
+	wp_enqueue_style('cookie-banner', plugins_url('banner.css', __FILE__), [], '1.0.9');
 	wp_enqueue_script('cookie-banner', plugins_url('banner.js', __FILE__), [], '1.0.6', true);
 });
 
@@ -514,7 +530,14 @@ add_action('wp_footer', function () {
 	}
 	$style .= sprintf('--shadow_y:%dpx;--shadow_blur:%dpx;--shadow_opacity:%d%%',
 		$options['shadow_y'], $options['shadow_blur'], $options['shadow_opacity']);
-	$classes = ['at-' . $options['position'], 'font-' . $options['font'], 'layout-' . $options['layout'], 'phone-' . $options['phone_buttons']];
+	if ($options['font'] !== '') {
+		$font = $options['font'];
+		if (!in_array(strtolower($font), ['system-ui', 'sans-serif', 'serif', 'monospace', 'cursive', 'fantasy'], true)) {
+			$font = '"' . $font . '"';
+		}
+		$style .= ';--banner-font:' . $font;
+	}
+	$classes = ['at-' . $options['position'], 'layout-' . $options['layout'], 'phone-' . $options['phone_buttons']];
 	?>
 	<div id="cookie-banner" class="<?php echo esc_attr(implode(' ', $classes)); ?>" style="<?php echo esc_attr($style); ?>">
 		<button type="button" class="cookie-settings" data-settings aria-controls="cookie-box" aria-expanded="false" hidden><?php echo esc_html($options['settings']); ?></button>
