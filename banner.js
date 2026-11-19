@@ -84,6 +84,32 @@
         }
     });
 
+    function loadScripts() {
+        const data = document.getElementById('cookie-banner-scripts');
+        if (!data) return;
+
+        for (const [category, {url, code}] of Object.entries(JSON.parse(data.textContent))) {
+            if (!window.cookieBanner.allows(category)) continue;
+
+            function runCode() {
+                if (!code) return;
+                const script = document.createElement('script');
+                script.textContent = code;
+                document.head.append(script);
+            }
+
+            if (url) {
+                const script = document.createElement('script');
+                script.src = url;
+                script.addEventListener('load', runCode, {once: true});
+                document.head.append(script);
+            } else {
+                runCode();
+            }
+        }
+    }
+
     show(!choices);
     document.dispatchEvent(new Event('cookie-banner-ready'));
+    loadScripts();
 })();
