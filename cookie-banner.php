@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Cookie Banner
  * Description: Настраиваемая плашка cookies с выбором категорий.
- * Version: 1.0.13
+ * Version: 1.0.14
  * Author: Gabulin
  * Author URI: https://github.com/Gabulin
  * Requires PHP: 7.4
@@ -515,8 +515,8 @@ add_action('wp_enqueue_scripts', function () {
 	if (!cookie_banner_visible(cookie_banner_options()['mode'])) {
 		return;
 	}
-	wp_enqueue_style('cookie-banner', plugins_url('banner.css', __FILE__), [], '1.0.13');
-	wp_enqueue_script('cookie-banner', plugins_url('banner.js', __FILE__), [], '1.0.13', true);
+	wp_enqueue_style('cookie-banner', plugins_url('banner.css', __FILE__), [], '1.0.14');
+	wp_enqueue_script('cookie-banner', plugins_url('banner.js', __FILE__), [], '1.0.14', true);
 });
 
 add_action('wp_footer', function () {
@@ -544,6 +544,10 @@ add_action('wp_footer', function () {
 		$style .= ';--banner-font:' . $font;
 	}
 	$classes = ['at-' . $options['position'], 'layout-' . $options['layout'], 'phone-' . $options['phone_buttons']];
+	// Keep the fallback font stack used by older Nunito installations.
+	if (strtolower($options['font']) === 'nunito') {
+		$classes[] = 'font-nunito';
+	}
 	?>
 	<div id="cookie-banner" class="<?php echo esc_attr(implode(' ', $classes)); ?>" style="<?php echo esc_attr($style); ?>">
 		<button type="button" class="cookie-settings" data-settings aria-controls="cookie-box" aria-expanded="false" hidden><?php echo esc_html($options['settings']); ?></button>
