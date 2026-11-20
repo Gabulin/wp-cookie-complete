@@ -72,7 +72,7 @@
     margin: 0;
     padding: 0;
     border: 0;
-    border-radius: 999px;
+    border-radius: var(--toggle-round, var(--switch_round));
     background: var(--switch_off);
     cursor: pointer;
 }
@@ -85,7 +85,7 @@
     width: var(--dot);
     height: var(--dot);
     margin: 0;
-    border-radius: 50%;
+    border-radius: var(--knob-round, var(--dot_round));
     background: var(--switch_dot);
     transform: translateY(-50%);
 }
@@ -148,6 +148,8 @@
         --toggle-gap: var(--switch_gap_tablet);
         --toggle-width: var(--switch_width_tablet);
         --toggle-height: var(--switch_height_tablet);
+        --toggle-round: var(--switch_round_tablet);
+        --knob-round: var(--dot_round_tablet);
         --actions-gap: var(--button_gap_tablet);
         --action-y: var(--button_y_tablet);
         --action-x: var(--button_x_tablet);
@@ -181,6 +183,8 @@
         --toggle-gap: var(--switch_gap_phone);
         --toggle-width: var(--switch_width_phone);
         --toggle-height: var(--switch_height_phone);
+        --toggle-round: var(--switch_round_phone);
+        --knob-round: var(--dot_round_phone);
         --actions-gap: var(--button_gap_phone);
         --action-y: var(--button_y_phone);
         --action-x: var(--button_x_phone);

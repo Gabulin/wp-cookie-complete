@@ -1,0 +1,13 @@
+{
+  "name": "wp-cookie-complete",
+  "version": "1.0.13",
+  "private": true,
+  "scripts": {
+    "test": "node tests/script-loading.cjs",
+    "test:php": "php tests/options.php",
+    "lint:php": "php -l cookie-banner.php"
+  },
+  "devDependencies": {
+    "playwright": "1.62.1"
+  }
+}

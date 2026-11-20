@@ -91,11 +91,38 @@
         for (const [category, {url, code}] of Object.entries(JSON.parse(data.textContent))) {
             if (!window.cookieBanner.allows(category)) continue;
 
-            function runCode() {
+            async function runCode() {
                 if (!code) return;
-                const script = document.createElement('script');
-                script.textContent = code;
-                document.head.append(script);
+
+                // Поддерживаем и JavaScript, и полный код счётчика из кабинета.
+                const markup = /^(?:\s|<!--[\s\S]*?-->)*<(?:script|noscript)\b/i.test(code);
+                if (!markup) {
+                    const script = document.createElement('script');
+                    script.textContent = code;
+                    document.head.append(script);
+                    return;
+                }
+
+                // template не запускает скрипты и не загружает картинки.
+                const template = document.createElement('template');
+                template.innerHTML = code;
+                for (const source of template.content.querySelectorAll('script')) {
+                    if (source.closest('noscript')) continue;
+                    const script = document.createElement('script');
+                    for (const attribute of source.attributes) {
+                        script.setAttribute(attribute.name, attribute.value);
+                    }
+                    script.async = false;
+                    script.textContent = source.textContent;
+                    const loaded = script.hasAttribute('src') || script.type === 'module'
+                        ? new Promise(resolve => {
+                            script.addEventListener('load', resolve, {once: true});
+                            script.addEventListener('error', resolve, {once: true});
+                        }) : null;
+                    document.head.append(script);
+                    if (loaded) await loaded;
+                }
+                // noscript нужен только при отключённом JS; пиксель не вставляем.
             }
 
             if (url) {

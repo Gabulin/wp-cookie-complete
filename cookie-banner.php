@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Cookie Banner
  * Description: Настраиваемая плашка cookies с выбором категорий.
- * Version: 1.0.9
+ * Version: 1.0.13
  * Author: Gabulin
  * Author URI: https://github.com/Gabulin
  * Requires PHP: 7.4
@@ -31,6 +31,8 @@ function cookie_banner_sizes() {
 		'type_text'    => ['Размер подписей категорий', 'px', 10, 32, [14, 14, 13]],
 		'switch_width' => ['Ширина переключателя', 'px', 24, 80, [40, 40, 34]],
 		'switch_height' => ['Высота переключателя', 'px', 14, 45, [22, 22, 19]],
+		'switch_round' => ['Скругление дорожки переключателя', 'px', 0, 80, [50, 50, 50]],
+		'dot_round'    => ['Скругление бегунка', 'px', 0, 80, [50, 50, 50]],
 		'switch_gap'   => ['Отступ переключателя от подписи', 'px', 0, 32, [10, 10, 8]],
 		'button_gap'   => ['Расстояние между кнопками', 'px', 0, 60, [10, 10, 8]],
 		'button_y'     => ['Внутренний отступ кнопок по вертикали', 'px', 0, 40, [11, 11, 10]],
@@ -135,7 +137,7 @@ function cookie_banner_options() {
 
 function cookie_banner_modes() {
 	return [
-		'on' => 'Включена',
+		'on' => 'Включена для всех',
 		'off' => 'Выключена',
 		'test' => 'Технический режим (только для администраторов)',
 	];
@@ -182,7 +184,7 @@ function cookie_banner_font_name($name) {
 
 function cookie_banner_message_html($message) {
 	return wp_kses($message, [
-		'a' => ['href' => true, 'title' => true, 'target' => true, 'rel' => true],
+		'a' => ['href' => true, 'title' => true, 'target' => true, 'rel' => true, 'class' => true],
 		'p' => [],
 		'br' => [],
 		'b' => [],
@@ -303,10 +305,10 @@ function cookie_banner_admin_row($group, $index, $row) {
 				<p><label>URL внешнего скрипта<br>
 					<input type="url" class="large-text" placeholder="https://example.com/script.js" name="<?php echo esc_attr($name . '[script_url]'); ?>" value="<?php echo esc_attr($row['script_url'] ?? ''); ?>">
 				</label></p>
-				<p><label>JavaScript без тегов &lt;script&gt;<br>
+				<p><label>JavaScript или полный код счётчика с &lt;script&gt;<br>
 					<textarea class="large-text code" rows="5" name="<?php echo esc_attr($name . '[script_code]'); ?>"><?php echo esc_textarea($row['script_code'] ?? ''); ?></textarea>
 				</label></p>
-				<p class="description">Можно заполнить одно или оба поля. Если указан URL, код выполнится после загрузки внешнего скрипта.</p>
+				<p class="description">Можно вставить JavaScript без тегов или полный код счётчика с тегами &lt;script&gt;. Блок &lt;noscript&gt; не выводится. Можно заполнить одно или оба поля. Если указан URL, код выполнится после загрузки внешнего скрипта.</p>
 			</details>
 		<?php endif; ?>
 	</div>
@@ -362,9 +364,13 @@ function cookie_banner_admin() {
 									'textarea_rows' => 5,
 									'media_buttons' => false,
 									'teeny' => true,
-									'tinymce' => ['toolbar1' => 'bold,italic,link,unlink,undo,redo'],
+									'tinymce' => [
+										'toolbar1' => 'bold,italic,link,unlink,undo,redo',
+										'extended_valid_elements' => 'a[href|title|target|rel|class]',
+									],
 									'quicktags' => ['buttons' => 'strong,em,link,close'],
 								]); ?>
+								<p class="description">Чтобы задать CSS-класс ссылки, откройте вкладку HTML редактора и добавьте <code>class="my-link"</code> внутри тега <code>&lt;a&gt;</code>.</p>
 							<?php elseif ($field === 'position') : ?>
 								<select id="<?php echo $id; ?>" name="<?php echo $name; ?>">
 									<option value="bottom" <?php selected($options[$field], 'bottom'); ?>>Снизу</option>
@@ -509,8 +515,8 @@ add_action('wp_enqueue_scripts', function () {
 	if (!cookie_banner_visible(cookie_banner_options()['mode'])) {
 		return;
 	}
-	wp_enqueue_style('cookie-banner', plugins_url('banner.css', __FILE__), [], '1.0.9');
-	wp_enqueue_script('cookie-banner', plugins_url('banner.js', __FILE__), [], '1.0.6', true);
+	wp_enqueue_style('cookie-banner', plugins_url('banner.css', __FILE__), [], '1.0.13');
+	wp_enqueue_script('cookie-banner', plugins_url('banner.js', __FILE__), [], '1.0.13', true);
 });
 
 add_action('wp_footer', function () {
